@@ -1,0 +1,768 @@
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "AbyssGui",
+    Subtitle = "Forsaken",
+    Size = UDim2.new(0, 400, 0, 600),
+    Theme = Fluent.Themes.Dark,
+    FolderToSave = "AbyssGui"
+})
+
+local ESPTab = Window:AddTab("ESP/Visuals")
+
+-- Survivor ESP
+local survivorHighlightCache = {}
+local survivorConnections = {}
+local function enableSurvivorESP()
+    local survivorsFolder = workspace:WaitForChild("Players"):WaitForChild("Survivors")
+
+    for _, model in pairs(survivorsFolder:GetChildren()) do
+        if model:IsA("Model") and not survivorHighlightCache[model] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "GreenHighlight"
+            highlight.Adornee = model
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = model
+            survivorHighlightCache[model] = highlight
+        end
+    end
+
+    local added = survivorsFolder.ChildAdded:Connect(function(model)
+        if model:IsA("Model") and not survivorHighlightCache[model] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "GreenHighlight"
+            highlight.Adornee = model
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = model
+            survivorHighlightCache[model] = highlight
+        end
+    end)
+
+    local removed = survivorsFolder.ChildRemoved:Connect(function(model)
+        if survivorHighlightCache[model] then
+            survivorHighlightCache[model]:Destroy()
+            survivorHighlightCache[model] = nil
+        end
+    end)
+
+    table.insert(survivorConnections, added)
+    table.insert(survivorConnections, removed)
+end
+
+local function disableSurvivorESP()
+    for _, h in pairs(survivorHighlightCache) do
+        if h then h:Destroy() end
+    end
+    survivorHighlightCache = {}
+
+    for _, conn in pairs(survivorConnections) do
+        conn:Disconnect()
+    end
+    survivorConnections = {}
+end
+
+-- Killer ESP
+local killerHighlightCache = {}
+local killerConnections = {}
+local function enableKillerESP()
+    local killersFolder = workspace:WaitForChild("Players"):WaitForChild("Killers")
+
+    for _, model in pairs(killersFolder:GetChildren()) do
+        if model:IsA("Model") and not killerHighlightCache[model] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "RedHighlight"
+            highlight.Adornee = model
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = model
+            killerHighlightCache[model] = highlight
+        end
+    end
+
+    local added = killersFolder.ChildAdded:Connect(function(model)
+        if model:IsA("Model") and not killerHighlightCache[model] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "RedHighlight"
+            highlight.Adornee = model
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = model
+            killerHighlightCache[model] = highlight
+        end
+    end)
+
+    local removed = killersFolder.ChildRemoved:Connect(function(model)
+        if killerHighlightCache[model] then
+            killerHighlightCache[model]:Destroy()
+            killerHighlightCache[model] = nil
+        end
+    end)
+
+    table.insert(killerConnections, added)
+    table.insert(killerConnections, removed)
+end
+
+local function disableKillerESP()
+    for _, h in pairs(killerHighlightCache) do
+        if h then h:Destroy() end
+    end
+    killerHighlightCache = {}
+
+    for _, conn in pairs(killerConnections) do
+        conn:Disconnect()
+    end
+    killerConnections = {}
+end
+
+-- Item ESP
+local itemHighlightCache = {}
+local itemConnections = {}
+local function enableItemESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    for _, tool in pairs(ingameFolder:GetChildren()) do
+        if tool:IsA("Tool") and (tool.Name == "BloxyCola" or tool.Name == "Medkit") and not itemHighlightCache[tool] then
+            local itemRoot = tool:FindFirstChild("ItemRoot")
+            if itemRoot and itemRoot:IsA("MeshPart") then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "YellowHighlight"
+                highlight.Adornee = itemRoot
+                highlight.FillColor = Color3.fromRGB(255, 255, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Parent = itemRoot
+                itemHighlightCache[tool] = highlight
+            end
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(tool)
+        if tool:IsA("Tool") and (tool.Name == "BloxyCola" or tool.Name == "Medkit") and not itemHighlightCache[tool] then
+            local itemRoot = tool:FindFirstChild("ItemRoot")
+            if itemRoot and itemRoot:IsA("MeshPart") then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "YellowHighlight"
+                highlight.Adornee = itemRoot
+                highlight.FillColor = Color3.fromRGB(255, 255, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Parent = itemRoot
+                itemHighlightCache[tool] = highlight
+            end
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(tool)
+        if itemHighlightCache[tool] then
+            itemHighlightCache[tool]:Destroy()
+            itemHighlightCache[tool] = nil
+        end
+    end)
+
+    table.insert(itemConnections, added)
+    table.insert(itemConnections, removed)
+end
+
+local function disableItemESP()
+    for _, h in pairs(itemHighlightCache) do
+        if h then h:Destroy() end
+    end
+    itemHighlightCache = {}
+
+    for _, conn in pairs(itemConnections) do
+        conn:Disconnect()
+    end
+    itemConnections = {}
+end
+
+-- Generator ESP
+local generatorHighlightCache = {}
+local generatorConnections = {}
+local function enableGeneratorESP()
+    local generatorFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame"):WaitForChild("Map")
+
+    for _, obj in pairs(generatorFolder:GetChildren()) do
+        if obj:IsA("Model") and obj.Name == "Generator" and not generatorHighlightCache[obj] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "PurpleHighlight"
+            highlight.Adornee = obj
+            highlight.FillColor = Color3.fromRGB(128, 0, 128)
+            highlight.OutlineColor = Color3.fromRGB(128, 0, 128)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = obj
+            generatorHighlightCache[obj] = highlight
+        end
+    end
+
+    local added = generatorFolder.ChildAdded:Connect(function(obj)
+        if obj:IsA("Model") and obj.Name == "Generator" and not generatorHighlightCache[obj] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "PurpleHighlight"
+            highlight.Adornee = obj
+            highlight.FillColor = Color3.fromRGB(128, 0, 128)
+            highlight.OutlineColor = Color3.fromRGB(128, 0, 128)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = obj
+            generatorHighlightCache[obj] = highlight
+        end
+    end)
+
+    local removed = generatorFolder.ChildRemoved:Connect(function(obj)
+        if generatorHighlightCache[obj] then
+            generatorHighlightCache[obj]:Destroy()
+            generatorHighlightCache[obj] = nil
+        end
+    end)
+
+    table.insert(generatorConnections, added)
+    table.insert(generatorConnections, removed)
+end
+
+local function disableGeneratorESP()
+    for _, h in pairs(generatorHighlightCache) do
+        if h then h:Destroy() end
+    end
+    generatorHighlightCache = {}
+
+    for _, conn in pairs(generatorConnections) do
+        conn:Disconnect()
+    end
+    generatorConnections = {}
+end
+
+-- Dispenser ESP
+local dispenserHighlightCache = {}
+local dispenserConnections = {}
+local function enableDispenserESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    for _, dispenser in pairs(ingameFolder:GetChildren()) do
+        if dispenser:IsA("Model") and dispenser.Name == "BuildermanDispenser" and not dispenserHighlightCache[dispenser] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "GreenHighlight"
+            highlight.Adornee = dispenser
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = dispenser
+            dispenserHighlightCache[dispenser] = highlight
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(dispenser)
+        if dispenser:IsA("Model") and dispenser.Name == "BuildermanDispenser" and not dispenserHighlightCache[dispenser] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "GreenHighlight"
+            highlight.Adornee = dispenser
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = dispenser
+            dispenserHighlightCache[dispenser] = highlight
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(dispenser)
+        if dispenserHighlightCache[dispenser] then
+            dispenserHighlightCache[dispenser]:Destroy()
+            dispenserHighlightCache[dispenser] = nil
+        end
+    end)
+
+    table.insert(dispenserConnections, added)
+    table.insert(dispenserConnections, removed)
+end
+
+local function disableDispenserESP()
+    for _, h in pairs(dispenserHighlightCache) do
+        if h then h:Destroy() end
+    end
+    dispenserHighlightCache = {}
+
+    for _, conn in pairs(dispenserConnections) do
+        conn:Disconnect()
+    end
+    dispenserConnections = {}
+end
+
+-- Sentry ESP
+local sentryHighlightCache = {}
+local sentryConnections = {}
+local function enableSentryESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    for _, sentry in pairs(ingameFolder:GetChildren()) do
+        if sentry:IsA("Model") and sentry.Name == "BuildermanSentry" and not sentryHighlightCache[sentry] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "GreenHighlight"
+            highlight.Adornee = sentry
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = sentry
+            sentryHighlightCache[sentry] = highlight
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(sentry)
+        if sentry:IsA("Model") and sentry.Name == "BuildermanSentry" and not sentryHighlightCache[sentry] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "GreenHighlight"
+            highlight.Adornee = sentry
+            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+            highlight.OutlineColor = Color3.fromRGB(0, 255, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = sentry
+            sentryHighlightCache[sentry] = highlight
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(sentry)
+        if sentryHighlightCache[sentry] then
+            sentryHighlightCache[sentry]:Destroy()
+            sentryHighlightCache[sentry] = nil
+        end
+    end)
+
+    table.insert(sentryConnections, added)
+    table.insert(sentryConnections, removed)
+end
+
+local function disableSentryESP()
+    for _, h in pairs(sentryHighlightCache) do
+        if h then h:Destroy() end
+    end
+    sentryHighlightCache = {}
+
+    for _, conn in pairs(sentryConnections) do
+        conn:Disconnect()
+    end
+    sentryConnections = {}
+end
+
+-- Two Time Ritual ESP
+local twoTimeHighlightCache = {}
+local twoTimeConnections = {}
+local function enableTwoTimeRitualESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    for _, part in pairs(ingameFolder:GetChildren()) do
+        if part:IsA("BasePart") and part.Name:sub(-15) == "RespawnLocation" and not twoTimeHighlightCache[part] then
+            part.Transparency = 0
+
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "WhiteHighlight"
+            highlight.Adornee = part
+            highlight.FillColor = Color3.fromRGB(255, 255, 255)
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = part
+
+            twoTimeHighlightCache[part] = highlight
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(part)
+        if part:IsA("BasePart") and part.Name:sub(-15) == "RespawnLocation" and not twoTimeHighlightCache[part] then
+            part.Transparency = 0
+
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "WhiteHighlight"
+            highlight.Adornee = part
+            highlight.FillColor = Color3.fromRGB(255, 255, 255)
+            highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = part
+
+            twoTimeHighlightCache[part] = highlight
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(part)
+        if twoTimeHighlightCache[part] then
+            twoTimeHighlightCache[part]:Destroy()
+            twoTimeHighlightCache[part] = nil
+        end
+    end)
+
+    table.insert(twoTimeConnections, added)
+    table.insert(twoTimeConnections, removed)
+end
+
+local function disableTwoTimeRitualESP()
+    for _, h in pairs(twoTimeHighlightCache) do
+        if h then h:Destroy() end
+    end
+    twoTimeHighlightCache = {}
+
+    for _, conn in pairs(twoTimeConnections) do
+        conn:Disconnect()
+    end
+    twoTimeConnections = {}
+end
+
+-- 1x Minion ESP
+local minionHighlightCache = {}
+local minionConnections = {}
+local function enableMinionESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    for _, obj in pairs(ingameFolder:GetChildren()) do
+        if obj:IsA("Model") and obj.Name == "1x1x1x1Zombie" and not minionHighlightCache[obj] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "RedHighlight"
+            highlight.Adornee = obj
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = obj
+            minionHighlightCache[obj] = highlight
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(obj)
+        if obj:IsA("Model") and obj.Name == "1x1x1x1Zombie" and not minionHighlightCache[obj] then
+            local highlight = Instance.new("Highlight")
+            highlight.Name = "RedHighlight"
+            highlight.Adornee = obj
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+            highlight.Parent = obj
+            minionHighlightCache[obj] = highlight
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(obj)
+        if minionHighlightCache[obj] then
+            minionHighlightCache[obj]:Destroy()
+            minionHighlightCache[obj] = nil
+        end
+    end)
+
+    table.insert(minionConnections, added)
+    table.insert(minionConnections, removed)
+end
+
+local function disableMinionESP()
+    for _, h in pairs(minionHighlightCache) do
+        if h then h:Destroy() end
+    end
+    minionHighlightCache = {}
+
+    for _, conn in pairs(minionConnections) do
+        conn:Disconnect()
+    end
+    minionConnections = {}
+end
+
+-- Pizza Bot ESP
+local pizzaBotHighlightCache = {}
+local pizzaBotConnections = {}
+local function enablePizzaBotESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    local specificNames = {
+        Mafiaso1 = true,
+        Mafiaso2 = true,
+        Mafiaso3 = true,
+        Builderman = true,
+        Elliot = true,
+        ShedletskyCORRUPT = true,
+        ChancecORRUPT = true,
+    }
+
+    for _, obj in pairs(ingameFolder:GetChildren()) do
+        if obj:IsA("Model") and not pizzaBotHighlightCache[obj] then
+            local name = obj.Name
+            local highlightModel = false
+
+            if name:sub(-3) == "Guy" then
+                highlightModel = true
+            end
+
+            if specificNames[name] then
+                highlightModel = true
+            end
+
+            if highlightModel then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "RedHighlight"
+                highlight.Adornee = obj
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Parent = obj
+                pizzaBotHighlightCache[obj] = highlight
+            end
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(obj)
+        if obj:IsA("Model") and not pizzaBotHighlightCache[obj] then
+            local name = obj.Name
+            local highlightModel = false
+
+            if name:sub(-3) == "Guy" then
+                highlightModel = true
+            end
+
+            if specificNames[name] then
+                highlightModel = true
+            end
+
+            if highlightModel then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "RedHighlight"
+                highlight.Adornee = obj
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Parent = obj
+                pizzaBotHighlightCache[obj] = highlight
+            end
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(obj)
+        if pizzaBotHighlightCache[obj] then
+            pizzaBotHighlightCache[obj]:Destroy()
+            pizzaBotHighlightCache[obj] = nil
+        end
+    end)
+
+    table.insert(pizzaBotConnections, added)
+    table.insert(pizzaBotConnections, removed)
+end
+
+local function disablePizzaBotESP()
+    for _, h in pairs(pizzaBotHighlightCache) do
+        if h then h:Destroy() end
+    end
+    pizzaBotHighlightCache = {}
+
+    for _, conn in pairs(pizzaBotConnections) do
+        conn:Disconnect()
+    end
+    pizzaBotConnections = {}
+end
+
+-- Taph Traps ESP
+local taphTrapsHighlightCache = {}
+local taphTrapsConnections = {}
+local function enableTaphTrapsESP()
+    local ingameFolder = workspace:WaitForChild("Map"):WaitForChild("Ingame")
+
+    for _, obj in pairs(ingameFolder:GetChildren()) do
+        if obj:IsA("Model") and not taphTrapsHighlightCache[obj] then
+            local name = obj.Name
+            if name == "SubspaceTripmine" or name:sub(-11) == "TaphTripwire" then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "RedHighlight"
+                highlight.Adornee = obj
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Parent = obj
+                taphTrapsHighlightCache[obj] = highlight
+            end
+        end
+    end
+
+    local added = ingameFolder.ChildAdded:Connect(function(obj)
+        if obj:IsA("Model") and not taphTrapsHighlightCache[obj] then
+            local name = obj.Name
+            if name == "SubspaceTripmine" or name:sub(-11) == "TaphTripwire" then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "RedHighlight"
+                highlight.Adornee = obj
+                highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                highlight.OutlineColor = Color3.fromRGB(255, 0, 0)
+                highlight.FillTransparency = 0.5
+                highlight.OutlineTransparency = 0
+                highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                highlight.Parent = obj
+                taphTrapsHighlightCache[obj] = highlight
+            end
+        end
+    end)
+
+    local removed = ingameFolder.ChildRemoved:Connect(function(obj)
+        if taphTrapsHighlightCache[obj] then
+            taphTrapsHighlightCache[obj]:Destroy()
+            taphTrapsHighlightCache[obj] = nil
+        end
+    end)
+
+    table.insert(taphTrapsConnections, added)
+    table.insert(taphTrapsConnections, removed)
+end
+
+local function disableTaphTrapsESP()
+    for _, h in pairs(taphTrapsHighlightCache) do
+        if h then h:Destroy() end
+    end
+    taphTrapsHighlightCache = {}
+
+    for _, conn in pairs(taphTrapsConnections) do
+        conn:Disconnect()
+    end
+    taphTrapsConnections = {}
+end
+
+-- Add toggles to ESPTab
+
+ESPTab:AddToggle("SurvivorESPToggle", {
+    Title = "Survivor ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableSurvivorESP()
+    else
+        disableSurvivorESP()
+    end
+end)
+
+ESPTab:AddToggle("KillerESPToggle", {
+    Title = "Killer ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableKillerESP()
+    else
+        disableKillerESP()
+    end
+end)
+
+ESPTab:AddToggle("ItemESPToggle", {
+    Title = "Item ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableItemESP()
+    else
+        disableItemESP()
+    end
+end)
+
+ESPTab:AddToggle("GeneratorESPToggle", {
+    Title = "Generator ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableGeneratorESP()
+    else
+        disableGeneratorESP()
+    end
+end)
+
+ESPTab:AddToggle("DispenserESPToggle", {
+    Title = "Dispenser ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableDispenserESP()
+    else
+        disableDispenserESP()
+    end
+end)
+
+ESPTab:AddToggle("SentryESPToggle", {
+    Title = "Sentry ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableSentryESP()
+    else
+        disableSentryESP()
+    end
+end)
+
+ESPTab:AddToggle("TwoTimeRitualESPToggle", {
+    Title = "Two Time Ritual ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableTwoTimeRitualESP()
+    else
+        disableTwoTimeRitualESP()
+    end
+end)
+
+ESPTab:AddToggle("MinionESPToggle", {
+    Title = "1x Minion ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableMinionESP()
+    else
+        disableMinionESP()
+    end
+end)
+
+ESPTab:AddToggle("PizzaBotESPToggle", {
+    Title = "Pizza Bot ESP",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enablePizzaBotESP()
+    else
+        disablePizzaBotESP()
+    end
+end)
+
+ESPTab:AddToggle("TaphTrapsESPToggle", {
+    Title = "Taph Traps ESP",
+    Description = "Highlights subspace trip mines and tripwires.",
+    Default = false
+}):OnChanged(function(state)
+    if state then
+        enableTaphTrapsESP()
+    else
+        disableTaphTrapsESP()
+    end
+end)
