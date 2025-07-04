@@ -766,3 +766,5 @@ ESPTab:AddToggle("TaphTrapsESPToggle", {
         disableTaphTrapsESP()
     end
 end)
+
+Window:Show()
