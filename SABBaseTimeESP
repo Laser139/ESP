@@ -1,0 +1,47 @@
+-- Place this in ServerScriptService or a LocalScript depending on visibility needs
+local plotsFolder = workspace:WaitForChild("Plots")
+
+for _, plot in ipairs(plotsFolder:GetChildren()) do
+	if plot:IsA("Model") then
+		local purchases = plot:FindFirstChild("Purchases")
+		if purchases then
+			local firstPlotBlock = purchases:FindFirstChild("PlotBlock")
+			if firstPlotBlock and firstPlotBlock:IsA("Model") then
+				local mainPart = firstPlotBlock:FindFirstChild("Main")
+				if mainPart and mainPart:IsA("BasePart") then
+					local originalBillboard = mainPart:FindFirstChild("BillboardGui")
+					if originalBillboard then
+						local remainingTime = originalBillboard:FindFirstChild("RemainingTime")
+						if remainingTime and remainingTime:IsA("TextLabel") then
+							
+							-- Create a new BillboardGui for big yellow text
+							local bigGui = Instance.new("BillboardGui")
+							bigGui.Name = "BigRemainingTime"
+							bigGui.Adornee = mainPart
+							bigGui.Size = UDim2.new(75, 0, 30, 0) -- scaled up 15x
+							bigGui.StudsOffset = Vector3.new(0, 5, 0) -- Position above part
+							bigGui.AlwaysOnTop = true
+							bigGui.Parent = mainPart
+							
+							local bigLabel = Instance.new("TextLabel")
+							bigLabel.Size = UDim2.new(1, 0, 1, 0)
+							bigLabel.BackgroundTransparency = 1
+							bigLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+							bigLabel.TextScaled = true
+							bigLabel.Font = Enum.Font.SourceSansBold
+							bigLabel.Parent = bigGui
+							
+							-- Update loop: sync with RemainingTime text
+							task.spawn(function()
+								while remainingTime and bigLabel do
+									bigLabel.Text = remainingTime.Text
+									task.wait(0.1) -- Update frequently
+								end
+							end)
+						end
+					end
+				end
+			end
+		end
+	end
+end
